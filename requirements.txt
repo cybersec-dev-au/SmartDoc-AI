@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+python-multipart
+pytesseract
+opencv-python
+pillow
+pandas
+openpyxl
+pdf2image
+numpy<2.0.0
+python-dotenv
+jinja2
+aiofiles

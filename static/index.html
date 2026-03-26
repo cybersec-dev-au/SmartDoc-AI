@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartDoc AI | Intelligent OCR Extraction</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #10b981;
+            --accent: #f43f5e;
+            --background: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            backdrop-filter: blur(12px);
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        p.subtitle {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* --- Upload Section --- */
+        .upload-section {
+            border: 2px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            margin-bottom: 3rem;
+            background: rgba(99, 102, 241, 0.05);
+            position: relative;
+        }
+
+        .upload-section:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.01);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* --- Results Panel --- */
+        .results-panel {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .field {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+        }
+
+        .value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .items-list {
+            margin-top: 1rem;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .item-name {
+            font-weight: 500;
+        }
+
+        .item-price {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* --- Export Section --- */
+        .export-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        button.btn {
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        /* --- Loading State --- */
+        #loader {
+            display: none;
+            margin: 2rem 0;
+        }
+
+        .dot-pulse {
+            position: relative;
+            left: -9999px;
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 9999px 0 0 0 var(--primary);
+            animation: dot-pulse 1.5s infinite linear;
+        }
+
+        @keyframes dot-pulse {
+            0% {
+                box-shadow: 9999px 0 0 -5px var(--primary);
+            }
+            30% {
+                box-shadow: 9999px 0 0 2px var(--primary);
+            }
+            60%, 100% {
+                box-shadow: 9999px 0 0 -5px var(--primary);
+            }
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>SmartDoc AI</h1>
+            <p class="subtitle">Intelligent Data Extraction for Seamless Bookkeeping</p>
+        </header>
+
+        <!-- --- Upload Section --- -->
+        <div class="upload-section" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" accept="image/*, application/pdf">
+            <i data-lucide="cloud-upload" class="upload-icon"></i>
+            <p style="font-size: 1.25rem; font-weight: 600; color: #fff;">Drop your invoice here</p>
+            <p style="color: var(--muted);">Supports Images and PDFs</p>
+        </div>
+
+        <div id="loader">
+            <div class="dot-pulse"></div>
+            <p style="margin-top: 1rem; color: var(--primary-light);">Analyzing document...</p>
+        </div>
+
+        <!-- --- Results Panel --- -->
+        <div class="results-panel" id="results">
+            <div class="card">
+                <h3><i data-lucide="info"></i> General Information</h3>
+                <div class="field">
+                    <span class="label">Date</span>
+                    <span class="value" id="res-date">--</span>
+                </div>
+                <div class="field">
+                    <span class="label">Total Amount</span>
+                    <span class="value" id="res-total" style="color: var(--secondary)">$0.00</span>
+                </div>
+
+                <div class="export-actions">
+                    <button class="btn btn-outline" id="export-csv">
+                        <i data-lucide="file-text"></i> Export CSV
+                    </button>
+                    <button class="btn btn-outline" id="export-excel">
+                        <i data-lucide="table"></i> Excel
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i data-lucide="list"></i> Extracted Items</h3>
+                <div class="items-list" id="res-items">
+                    <!-- Items will go here -->
+                </div>
+                <div id="no-items" style="color: var(--muted); font-style: italic; margin-top: 1rem;">
+                    No line items detected.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 SmartDoc AI. Powered by Advanced OCR.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        const fileInput = document.getElementById('file-input');
+        const results = document.getElementById('results');
+        const loader = document.getElementById('loader');
+
+        let extractedData = null;
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show Loading
+            results.style.display = 'none';
+            loader.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/extract', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('OCR Failed');
+
+                extractedData = await response.json();
+                displayResults(extractedData);
+            } catch (err) {
+                alert('Oops! Document processing failed. Make sure the server is running and Tesseract is installed.');
+                console.error(err);
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+
+        function displayResults(data) {
+            document.getElementById('res-date').innerText = data.date || "Not detected";
+            document.getElementById('res-total').innerText = "$" + data.total.toFixed(2);
+            
+            const list = document.getElementById('res-items');
+            const noItems = document.getElementById('no-items');
+            list.innerHTML = '';
+            
+            if (data.items.length > 0) {
+                noItems.style.display = 'none';
+                data.items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    div.innerHTML = `
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">$${item.price.toFixed(2)}</span>
+                    `;
+                    list.appendChild(div);
+                });
+            } else {
+                noItems.style.display = 'block';
+            }
+
+            results.style.display = 'grid';
+        }
+
+        // Export To CSV
+        document.getElementById('export-csv').addEventListener('click', () => {
+           if (!extractedData) return;
+           let csvContent = "data:text/csv;charset=utf-8,";
+           csvContent += "Date,Total,Item Name,Price\n";
+           
+           if (extractedData.items.length > 0) {
+               extractedData.items.forEach(it => {
+                   csvContent += `${extractedData.date},${extractedData.total},"${it.name}",${it.price}\n`;
+               });
+           } else {
+               csvContent += `${extractedData.date},${extractedData.total},,\n`;
+           }
+
+           const encodedUri = encodeURI(csvContent);
+           const link = document.createElement("a");
+           link.setAttribute("href", encodedUri);
+           link.setAttribute("download", "receipt_data.csv");
+           document.body.appendChild(link);
+           link.click();
+        });
+
+        // Export To Excel using XLSX library
+        document.getElementById('export-excel').addEventListener('click', () => {
+            if (!extractedData) return;
+            const wb = XLSX.utils.book_new();
+            const wsData = [
+                ["Date", "Total Amount"],
+                [extractedData.date, extractedData.total],
+                [],
+                ["Item Name", "Price"]
+            ];
+            
+            extractedData.items.forEach(it => wsData.push([it.name, it.price]));
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Extraction");
+            XLSX.writeFile(wb, "SmartDoc_Extraction.xlsx");
+        });
+    </script>
+</body>
+</html>
