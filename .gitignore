@@ -1,0 +1,22 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Uploads
+uploads/
+processed_*.png
+processed_*.jpg
+
+# OS
+.DS_Store
+Thumbs.db

@@ -32,6 +32,12 @@ async def extract_receipt_data(file: UploadFile = File(...)):
         # 1. OCR text extraction
         raw_text = extract_text(file_path)
         
+        if raw_text == "ERROR_MISSING_TESSERACT":
+            raise HTTPException(
+                status_code=400, 
+                detail="Tesseract OCR engine not found. Please install it or point to its executable in ocr/processor.py."
+            )
+        
         # 2. Extract structured data from text
         structured_data = parse_structured_data(raw_text)
         
