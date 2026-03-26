@@ -1,4 +1,8 @@
 ![SmartDoc-AI](smartdoc-ai.png)
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
+![License](https://img.shields.io/badge/License-Apache%202.0-orange)
+
 ---
 
 # SmartDoc AI - Intelligent OCR Document Processing
