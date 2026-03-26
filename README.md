@@ -1,3 +1,6 @@
+![SmartDoc-AI](smartdoc-ai.png)
+---
+
 # SmartDoc AI - Intelligent OCR Document Processing
 
 SmartDoc AI is an automated document processing system for small businesses. It extracts structured data (Date, Total, Items) from receipts and invoices using OCR and modern preprocessing.
